@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ôn luyện trắc nghiệm - NHT</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#1b1d21;color:#e6e6e6;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:820px;margin:0 auto;padding:12px 12px 130px}
+h2{margin:8px 0}
+.card{background:#2a2d33;border-radius:14px;padding:16px;margin:10px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;color:#9aa0a6;font-size:14px}
+.sec{color:#f59e0b;font-weight:600;font-size:14px}
+.qt{font-size:18px;margin:8px 0}
+.hint{color:#9aa0a6;font-size:14px}
+.g{color:#4ade80}
+.qi{max-width:100%;border-radius:8px;margin:8px 0}
+.opt,.tfr{display:flex;align-items:center;gap:12px;min-height:54px;padding:10px 12px;margin:10px 0;border:2px solid #40444c;border-radius:12px;background:#2f333a;word-break:break-word}
+.opt{cursor:pointer}
+.ltr{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid #6b7078;display:grid;place-items:center;font-weight:700}
+.tx{flex:1 1 200px;min-width:0}
+.opt.sel{border-color:#f59e0b;background:#4a3a14}
+.opt.sel .ltr{background:#f59e0b;color:#111;border-color:#f59e0b}
+.opt.ok,.tfr.ok{border-color:#22c55e;background:#14361f}
+.opt.bad,.tfr.bad{border-color:#ef4444;background:#3d1a1a}
+.opt.cut .tx{text-decoration:line-through;opacity:.4}
+.x{background:none;border:0;color:#8b9098;font-size:18px;padding:8px 10px}
+button,select,input,textarea{font:inherit}
+button{cursor:pointer}
+.btn{background:#3a3e46;color:#eee;border:0;border-radius:10px;padding:10px 14px;margin:4px 4px 4px 0;min-height:42px}
+.btn.on{background:#f59e0b;color:#111;font-weight:700}
+.main{background:#f59e0b;color:#111;font-weight:700;border:0;border-radius:12px;padding:12px 22px;min-height:46px}
+.main:disabled{opacity:.4}
+.sa,select,#nm,.note{width:100%;background:#1b1d21;color:#eee;border:2px solid #40444c;border-radius:10px;padding:12px;margin:6px 0}
+.sa{font-size:22px;text-align:center}
+.exp{background:#1f2f3d;border-left:4px solid #38bdf8;border-radius:8px;padding:10px 12px;margin-top:12px}
+#ft{display:none;position:fixed;left:0;right:0;bottom:0;background:#23262b;border-top:1px solid #3a3e46;justify-content:space-between;align-items:center;padding:10px 14px;z-index:20}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);max-width:92%;padding:12px 18px;border-radius:12px;font-weight:600;z-index:70;display:none;text-align:center}
+#toast.ok{background:#16a34a;color:#fff}#toast.bad{background:#dc2626;color:#fff}#toast.warn{background:#f59e0b;color:#111}
+#nht{position:fixed;right:10px;bottom:70px;font-size:14px;font-weight:700;opacity:.55;z-index:15;pointer-events:none}
+#padBtn{position:fixed;right:10px;top:10px;z-index:80;background:#f59e0b;color:#111;border:0;border-radius:20px;padding:8px 14px;font-weight:700}
+#pad{position:fixed;inset:0;z-index:50;touch-action:none;display:none;cursor:crosshair}
+#padTools{position:fixed;top:54px;right:10px;z-index:80;display:none;background:#2a2d33;padding:6px;border-radius:12px}
+.pal{display:flex;flex-wrap:wrap;gap:6px}.pal button{width:40px;height:40px;border-radius:8px;border:2px solid #40444c;background:#2f333a;color:#eee}
+.pal .an{background:#4a3a14}.pal .cu{border-color:#f59e0b}
+table{width:100%;border-collapse:collapse}td,th{padding:8px 6px;border-bottom:1px solid #3a3e46;text-align:left;font-size:14px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;padding-right:90px}
+#crash{position:fixed;inset:0;background:#000d;z-index:999;display:grid;place-items:center;padding:16px}
+#crash>div{background:#2a2d33;padding:20px;border-radius:14px;max-width:560px;width:100%}
+#crash pre{white-space:pre-wrap;word-break:break-word;color:#fca5a5;max-height:40vh;overflow:auto}
+@media(max-width:480px){.qt{font-size:17px}.main{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ft"></div>
+<div id="toast"></div>
+<div id="nht">NHT</div>
+<button id="padBtn" data-act="padtoggle">✏️ Nháp</button>
+<canvas id="pad"></canvas>
+<div id="padTools">
+<button class="btn" data-act="pc" data-c="#fbbf24">🟡</button><button class="btn" data-act="pc" data-c="#f87171">🔴</button><button class="btn" data-act="pc" data-c="#60a5fa">🔵</button><button class="btn" data-act="pc" data-c="#ffffff">⚪</button><button class="btn" data-act="per">🧽 Tẩy</button><button class="btn" data-act="pclear">🗑 Xóa</button>
+</div>
+<script>
+(function () {
+'use strict';
+function showCrash(m) {
+  if (document.getElementById('crash')) return;
+  var d = document.createElement('div');
+  d.id = 'crash';
+  d.innerHTML = '<div><h3>⚠️ Đã xảy ra lỗi</h3><pre></pre><button class="main">Khôi phục ứng dụng</button></div>';
+  d.querySelector('pre').textContent = String(m || 'Lỗi không xác định');
+  d.querySelector('button').onclick = function () {
+    try { localStorage.removeItem('nhtq:session'); indexedDB.deleteDatabase('nht_quiz_tmp'); } catch (x) {}
+    try { mem.session = null; SE.del('session').then(function () { location.reload(); }); } catch (x) { location.reload(); }
+    setTimeout(function () { location.reload(); }, 800);
+  };
+  document.body.appendChild(d);
+}
+window.addEventListener('error', function (e) { showCrash(e.message); });
+window.addEventListener('unhandledrejection', function (e) { showCrash(e.reason && e.reason.stack || e.reason); });
+
+const examData = [
+ {
+  "id": 1,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Tập đoàn __________ đã thực hiện chương trình cải tạo xã hội theo mô hình cực đoan, khiến đất nước Chùa Tháp rơi vào cảnh hỗn loạn.",
+  "image": "",
+  "options": [
+   "Pol Pot – Ieng Sary",
+   "Campuchia",
+   "Hitler",
+   "Hun sen"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 2,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Tập đoàn Pol Pot – leng Sary lên nắm chính quyền Campuchia vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Tháng 4/1975",
+   "Tháng 4/1978",
+   "Tháng 5/1977",
+   "Tháng 12/1979"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 3,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Quân và dân ta đã tổ chức tổng phản công trên toàn tuyến biên giới tây nam, đẩy tập đoàn Pol Pot – leng Sary ra khỏi lãnh thổ của Tổ quốc vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Ngày 15/6/1978",
+   "Ngày 23/12/1978",
+   "Ngày 30/4/1977",
+   "Ngày 07/01/1979"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 4,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Tập đoàn Pol Pot – leng Sary tiến hành xâm phạm lãnh thổ nước ta vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Ngày 15/6/1978",
+   "Ngày 30/4/1977",
+   "Ngày 23/12/1978",
+   "Ngày 07/01/1979"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 5,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Mặt trận Đoàn kết dân tộc cứu nước Campuchia ra đời vào",
+  "image": "",
+  "options": [
+   "30/4/1977",
+   "2/12/1978",
+   "6/5/1954",
+   "3/11/1956"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 6,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Thủ đô Phnom Penh được giải phóng vào thời gian nào?",
+  "image": "",
+  "options": [
+   "7/1/1979",
+   "3/2/1954",
+   "30/4/1975",
+   "19/8/1979"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 7,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Năm ___________ chính quyền Trung Quốc đưa quân đánh, chiếm đóng trái phép nhóm đảo phía Đông quần đảo Hoàng Sa",
+  "image": "",
+  "options": [
+   "1956",
+   "1974",
+   "1979",
+   "1982"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 8,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Chính quyền Trung Quốc chiếm trái phép nhóm đảo phía tây quần đảo Hoàng Sa vào năm nào?",
+  "image": "",
+  "options": [
+   "Năm 1975",
+   "Năm 1988",
+   "Năm 1974",
+   "Năm 1979"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 9,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Chính quyền Trung Quốc huy động lực lượng lớn tiến công sang lãnh thổ Việt Nam vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Ngày 2/12//1978",
+   "Ngày 30/4/1977",
+   "Ngày 23/12/1978",
+   "Ngày 17/2/1979"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 10,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Trung Quốc chiếm bãi đá: Chữ Thập, Châu Viên, Ga ven, Tư Nghĩa, Gạc Ma, Xu Bi thuộc quần đảo Trường Sa Việt Nam vào năm nào?",
+  "image": "",
+  "options": [
+   "Năm 1975",
+   "Năm 1988",
+   "Năm 1974",
+   "Năm 1979"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 11,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Chủ tịch nước Cộng hoà xã hội chủ nghĩa Việt Nam ra lệnh Tổng động viên trong cả nước đứng lên chống quân xâm lược ở vùng biên giới phía Bắc vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Ngày 5/3/1979",
+   "Ngày 18/3/1979",
+   "Ngày 20/5/1979",
+   "Ngày 17/2/1979"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 12,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Chính quyền Trung Quốc tuyên bố rút quân khỏi lãnh thổ Việt Nam vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Ngày 2/12//1978",
+   "Ngày 30/4/1977",
+   "Ngày 23/12/1980",
+   "Ngày 5/3/1979"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 13,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Về cơ bản Trung Quốc đã rút quân khỏi nước ta vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Ngày 18/3/1979",
+   "Ngày 30/4/1977",
+   "Ngày 23/12/1978",
+   "Ngày 17/2/1979"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 14,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Chính quyền Trung Quốc tăng cường hoạt động quân sự, khiêu khích vũ trang, xâm lấn đất đai nước ta vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Từ năm 1973 đến năm 1975",
+   "Từ năm 1976 đến năm 1977",
+   "Từ năm 1974 đến năm 1978",
+   "Từ năm 1975 đến năm 1978"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 15,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Tập đoàn Pol Pot – leng Sary tiến hành xâm phạm các tỉnh nào trên lãnh thổ nước ta?",
+  "image": "",
+  "options": [
+   "Tỉnh An Giang, Kiên Giang, Đồng Tháp",
+   "Từ tỉnh An Giang, Đồng Tháp, Tây Ninh",
+   "Tỉnh Kiên Giang và Tây Ninh",
+   "Các tỉnh biên giới phía Bắc"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 16,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Bộ Chính trị và Quân Ủy Trung ương phát động chiến tranh nhân dân vào thời gian nào?",
+  "image": "",
+  "options": [
+   "Ngày 15/6/1978",
+   "Ngày 30/4/1977",
+   "Ngày 23/12/1978",
+   "Ngày 07/01/1979"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 17,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Trong cuộc đấu tranh bảo vệ chủ quyền biển, đảo, Việt Nam nhất quán giải quyết các tranh chấp bằng biện pháp",
+  "image": "",
+  "options": [
+   "Nhất quán với các chủ trương của Đảng và Nhà nước",
+   "Quyết tử cho Tổ quốc quyết sinh",
+   "Hòa bình, phù hợp với luật pháp quốc tế",
+   "Tuyên bố chủ quyền biển đảo."
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 18,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Bộ Quy tắc ứng xử ở Biển Đông giữa hiệp hội các quốc gia Đông Nam Á được viết tắt theo tiếng Anh là gì?",
+  "image": "",
+  "options": [
+   "DOC",
+   "ASEAN",
+   "COC",
+   "UNCLOS"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 19,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Tuyên bố về ứng xử của các bên ở Biển Đông viết tắt theo tiếng Anh là gì?",
+  "image": "",
+  "options": [
+   "DOC",
+   "ASEAN",
+   "COC",
+   "UNCLOS"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 20,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Công ước của Liên hợp quốc về Luật Biển ra đời năm nào?",
+  "image": "",
+  "options": [
+   "Năm 1975",
+   "Năm 1982",
+   "Năm 1974",
+   "Năm 1979"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 21,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Đối với quần đảo Trường Sa, có ____ nước, ______ bên tuyên bố chủ quyền toàn bộ hay một phần đảo này",
+  "image": "",
+  "options": [
+   "6,7",
+   "4,5",
+   "3,4",
+   "5,6"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 22,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Tội ác mà lực lượng Khmer Đỏ gây cho nhân dân ta là",
+  "image": "",
+  "options": [
+   "Phá đồi, núi, săn bắn động vật hoang dã",
+   "Rải chất độc hóa học phá hoại mùa màng",
+   "Thả bom bắn phá nhiều cứ điểm của bộ đội ta",
+   "Giết hại dã man nhiều đồng bào ta, cướp bóc tài sản, phá hoại hoa màu, nhà cửa"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 23,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Ý nào sau đây thể hiện trách nhiệm của công dân đối với sự nghiệp củng cố quốc phòng, an ninh?",
+  "image": "",
+  "options": [
+   "Đăng kí nghĩa vụ quân sự theo đúng quy định của pháp luật",
+   "Hạn chế tham gia các hoạt động tri ân người có công với đất nước",
+   "Không tham gia hoạt động đền ơn đáp nghĩa do địa phương tổ chức",
+   "Chỉ đăng kí nghĩa vụ quân sự khi bị ép buộc"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 24,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Mục đích thành lập của Mặt trận Đoàn kết dân tộc cứu nước Campuchia là",
+  "image": "",
+  "options": [
+   "Liên hợp với các nước khác để giành lại độc lập",
+   "Khôi phục lại chế độ chiếm hữu nô lệ",
+   "Lật đổ chế độ diệt chủng, khôi phục lại đất nước",
+   "Thúc đẩy phát triển kinh tế"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 25,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Nhân tố có ý nghĩa quyết định để quân và dân ta thực hiện thắng lợi chiến tranh bảo vệ Tổ quốc ở biên giới Tây Nam là",
+  "image": "",
+  "options": [
+   "Kết hợp kịp thời với các lực lượng của các nước yêu chuộng hòa bình",
+   "Sự sụp đổ của lực lượng Khmer Đỏ",
+   "Đảng đã đề ra chủ trương, đường lối, mục tiêu chính trị đúng đắn, sáng tạo",
+   "Chế độ Pol Pot có nhiều lỗ hổng, thiếu sót trong khâu quản lí"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 26,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Mục đích của cuộc chiến tranh bảo vệ biên giới Tây Nam là",
+  "image": "",
+  "options": [
+   "Bảo vệ chủ quyền biển đảo của Tổ quốc",
+   "Bảo vệ biên giới phía Bắc khỏi sự nhòm ngó của các thế lực thù địch",
+   "Bảo vệ vững chắc độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc",
+   "Bảo vệ độc lập đồng thời thúc đẩy phát triển kinh tế"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 27,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Trong cuộc chiến nào ta đã kết hợp chặt chẽ lực lượng tại chỗ với các binh đoàn chủ lực và các đơn vị thuộc các quân, binh chủng tham gia chiến đấu?",
+  "image": "",
+  "options": [
+   "Đấu tranh chống quân Nguyên Mông",
+   "Đấu tranh bảo vệ chủ quyền biển, đảo",
+   "Chiến tranh bảo vệ biên giới phía Bắc",
+   "Chiến tranh bảo vệ biên giới Tây Nam"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 28,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "“Lấy nhỏ đánh lớn, lấy ít địch nhiều” là nghệ thuật quân sự trong",
+  "image": "",
+  "options": [
+   "Chiến tranh bảo vệ biên giới Tây Nam",
+   "Đấu tranh bảo vệ chủ quyền biển, đảo",
+   "Chiến tranh bảo vệ biên giới phía Bắc.",
+   "Đấu tranh bảo vệ chủ quyền biên giới Đông Nam"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 29,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Nhân ngày Thương binh – Liệt sĩ 27 tháng 7, người dân thường dâng hương, dâng hoa cho các anh hùng liệt sĩ tại nghĩa trang liệt sĩ ở địa phương. Đây là hành động",
+  "image": "",
+  "options": [
+   "Tri ân với người có công với đất nước",
+   "Sẵn sàng tham gia bảo vệ vững chắc độc lập, chủ quyền của Tổ quốc",
+   "Học tập, tìm hiểu đường lối, chủ trương của Đảng",
+   "Phụng dưỡng bà mẹ Việt Nam anh hùng"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 30,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Học sinh trường H thường xuyên chủ động tìm hiểu, học tập nắm chắc đường lối, chủ trương của Đảng, chính sách, pháp luật của Nhà nước nói chung. Hành động này thể hiện",
+  "image": "",
+  "options": [
+   "Lòng hiếu học của các học sinh trong trường",
+   "Khả năng nhận thức, lòng hiếu học của học sinh trường H",
+   "Sự tò mò, ham học hỏi của các học sinh trong trường",
+   "Trách nhiệm của học sinh trường H đối với sự nghiệp củng cố quốc phòng, an ninh"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 31,
+  "section": "Bài 1. BẢO VỆ TỔ QUỐC VIỆT NAM XHCN SAU NĂM 1975",
+  "type": "single",
+  "question": "Tại sao nói cuộc chiến tranh bảo vệ biên giới Tây Nam thể hiện tinh thần quốc tế trong sáng, thủy chung của nhân dân Việt Nam và nhân dân Campuchia?",
+  "image": "",
+  "options": [
+   "Vì nhân dân Việt Nam đã cứu giúp nhân dân Campuchia thoát khỏi thảm họa diệt chủng, giành lại quyền được sống, quyền làm người",
+   "Vì nhân dân Việt Nam đã giúp nhân dân Campuchia bảo vệ biên giới phía Tây Nam",
+   "Vì nhân dân Việt Nam đã góp phần giúp nhân dân Campuchia khôi phục nền kinh tế sau chiến tranh",
+   "Vì nhân dân Việt Nam chia sẻ cho nhân dân Campuchia những kinh nghiệm chống giặc"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 32,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Lực lượng Quân đội nhân dân, công an nhân dân Việt Nam đặt dưới sự lãnh đạo trực tiếp, thống nhất của",
+  "image": "",
+  "options": [
+   "Đảng Cộng sản Việt Nam",
+   "Mặt trận Tổ quốc Việt Nam",
+   "Quốc hội nước Việt Nam",
+   "Chính phủ Việt Nam"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 33,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Quân đội nhân dân của nước Cộng hòa xã hội chủ nghĩa Việt Nam đặt dưới sự chỉ huy và điều hành của",
+  "image": "",
+  "options": [
+   "Tổng bí thư Đảng Cộng sản Việt Nam",
+   "Chủ tịch Quốc hội",
+   "Thủ tướng chính phủ",
+   "Bộ trưởng Bộ Quốc phòng"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 34,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Quân khu 9 quản lí các tỉnh nào?",
+  "image": "",
+  "options": [
+   "An Giang, Đồng Tháp, Bạc Liêu, Cà Mau, Thành phố Cần Thơ",
+   "Kiên Giang, An Giang, Đồng Tháp, Long An, Vĩnh Long, Thành phố Cần Thơ",
+   "An Giang, Đồng Tháp, Vĩnh Long, Cà Mau, Thành phố Cần Thơ",
+   "An Giang, Đồng Tháp, Trà Vinh, Cà Mau, Thành phố Cần Thơ"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 35,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trong hệ thống tổ chức của quân đội nhân dân Việt Nam, cơ quan nào đảm nhiệm công tác Đảng, công tác chính trị trong toàn quân?",
+  "image": "",
+  "options": [
+   "Tổng cục chính trị",
+   "Bộ Tổng tham mưu",
+   "Tổng cục Hậu cần",
+   "Tổng cục Kĩ thuật"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 36,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trong hệ thống tổ chức của quân đội nhân dân Việt Nam, quân khu được hiểu là",
+  "image": "",
+  "options": [
+   "Tổ chức quân sự theo lãnh thổ, trực thuộc Bộ Quốc phòng",
+   "Đơn vị tác chiến chiến dịch hoặc chiến dịch – chiến thuật",
+   "Bộ phận quân đội hoạt động ở môi trường địa lí nhất định",
+   "Các đơn vị bộ đội chuyên môn, ví dụ: pháp binh, công binh…"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 37,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Hệ thống cấp, bậc hàm của sĩ quan Quân đội nhân dân Việt Nam bao gồm bao nhiêu cấp, bậc?",
+  "image": "",
+  "options": [
+   "3 cấp, 12 bậc",
+   "2 cấp, 8 bậc",
+   "1 cấp, 4 bậc",
+   "4 cấp, 16 bậc"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 38,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Sĩ quan cấp úy trong Quân đội nhân dân Việt Nam có bao nhiêu bậc?",
+  "image": "",
+  "options": [
+   "1",
+   "2",
+   "3",
+   "4"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 39,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Sĩ quan cấp Tướng Quân chủng Hải quân trong QĐNDVN gồm có",
+  "image": "",
+  "options": [
+   "Thiếu tướng, Trung tướng, Thượng tướng, Đại tướng",
+   "Thiếu tướng, Trung tướng, Thượng tướng",
+   "Thiếu tướng, Trung tướng",
+   "Chuẩn Đô đốc, Phó đô đốc, Đô đốc"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 40,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Đảng lãnh đạo quân đội ta theo nguyên tắc nào?",
+  "image": "",
+  "options": [
+   "Tuyệt đối, trực tiếp về mọi mặt",
+   "Tuyệt đối, toàn diện về mọi mặt",
+   "Tuyệt đối, trực tiếp, toàn diện về mọi mặt",
+   "Trực tiếp, toàn diện về mọi mặt"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 41,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Bộ trưởng bộ Quốc phòng hiện nay tên gì, mang cấp bậc hàm nào?",
+  "image": "",
+  "options": [
+   "Đại tướng Phùng Quang Thanh",
+   "Đại tướng Ngô Xuân Lịch",
+   "Đại tướng Phan Văn Giang",
+   "Đại tướng Tô Lâm"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 42,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Quân hiệu Quân đội NDVN có loại nào?",
+  "image": "",
+  "options": [
+   "Đường kính 36; 33; 28mm",
+   "Đường kính 41; 36; 33mm",
+   "Đường kính 41; 33; 28 mm",
+   "Đường kính 41; 36; 28mm"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 43,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Hiện nay theo hệ thống của tổ chức Quân đội nhân dân VN, quân khu gồm?",
+  "image": "",
+  "options": [
+   "Quân khu 1, 2, 3, 4, 5, 7, 9",
+   "Quân khu 1, 2, 3, 4, 5, 6,7, 9",
+   "Quân khu 1, 2, 3, 4, 5, 7, 9, 10.",
+   "Quân khu 1, 2, 3, 4, 5, 6, 7, 8, 9"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 44,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Các cơ quan, tổ chức nào sau đây không thuộc hệ thống tổ chức Quân đội nhân dân Việt Nam?",
+  "image": "",
+  "options": [
+   "Bộ Tổng Tham mưu",
+   "Tổng Cục Chính trị",
+   "Bộ Chỉ huy quân sự thành phố",
+   "Hội Cựu chiến binh Việt Nam"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 45,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Quân hàm sĩ quan quân đội: “Ba sao - Hai vạch” là",
+  "image": "",
+  "options": [
+   "Thiếu tá",
+   "Trung tá",
+   "Thượng tá",
+   "Đại tá"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 46,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trên cấp hiệu QĐNDVN có viền đỏ, sọc màu hồng, ba sao, hai vạch là",
+  "image": "",
+  "options": [
+   "Thượng tá, lục quân, quân nhân chuyên nghiệp",
+   "Thượng tá lục quân",
+   "Đại úy Quân chủng Hải quân",
+   "Đại úy Binh chủng hợp thành"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 47,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trên cấp hiệu QĐNDVN có nền màu xanh lá cây, sọc màu hồng, một vạch là",
+  "image": "",
+  "options": [
+   "Chuẩn úy, lục quân, quân nhân chuyên nghiệp",
+   "Binh nhất lục quân",
+   "Chuẩn úy, quân nhân chuyên nghiệp, Bộ đội biên phòng",
+   "Hạ sĩ Binh chủng hợp thành"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 48,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trên cấp hiệu QĐNDVN có nền màu xanh lá cây, viền màu vàng là",
+  "image": "",
+  "options": [
+   "Học viên sĩ quan Bộ đội biên phòng",
+   "Học viên sĩ quan Cảnh sát biển",
+   "Học viên sĩ quan Quân chủng PK-KQ",
+   "Học viên sĩ quan Binh chủng hợp thành"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 49,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Nhìn cấp hiệu Quân đội NDVN bạn biết được",
+  "image": "",
+  "options": [
+   "Cấp bậc, Quân/Binh chủng, bộ phận nào",
+   "Cấp bậc, Binh chủng, bộ phận nào",
+   "Cấp bậc, Quân/Binh chủng, ngành chuyên môn",
+   "Chức vụ, Binh chủng, bộ phận nào"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 50,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trên cấp hiệu QĐNDVN có viền đỏ, bốn sao là",
+  "image": "",
+  "options": [
+   "Đại tướng lục quân",
+   "Đại tá lục quân",
+   "Đại Úy Quân chủng Hải quân",
+   "Đại Úy Binh chủng hợp thành"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 51,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trên cấp hiệu QĐNDVN có viền màu xanh hòa bình, ba sao là",
+  "image": "",
+  "options": [
+   "Thượng tướng lục quân",
+   "Thượng tướng Quân chủng Phòng không-không quân",
+   "Thượng Úy Quân chủng Hải quân",
+   "Đại tá Binh chủng hợp thành"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 52,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trên cấp hiệu QĐNDVN có viền màu tím than, hai sao là",
+  "image": "",
+  "options": [
+   "Trung tướng Quân chủng Hải quân",
+   "Thiếu tướng Quân chủng Phòng không-không quân",
+   "Phó Đô đốc Quân chủng Hải quân",
+   "Đại tá Binh chủng hợp thành"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 53,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trên cấp hiệu QĐNDVN có nền màu xanh lá cây, một sao, một vạch là",
+  "image": "",
+  "options": [
+   "Thiếu úy lục quân",
+   "Thiếu tướng Quân chủng Phòng không-không quân",
+   "Thiếu Úy Quân chủng Hải quân",
+   "Thiếu Úy Bộ đội Biên phòng"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 54,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Kỷ niệm ngày thành lập Công an nhân dân là?",
+  "image": "",
+  "options": [
+   "Ngày 22/12",
+   "Ngày 02/9",
+   "Ngày 19/8",
+   "Ngày 28/3"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 55,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Cơ quan nào dưới đây không thuộc hệ thống tổ chức của quân đội nhân dân Việt Nam?",
+  "image": "",
+  "options": [
+   "Tổng cục chính trị",
+   "Tòa án quân sự trung ương",
+   "Viện kiểm Nhân dân tối cao",
+   "Tổng cục hậu cần"
+  ],
+  "correct": 2,
+  "explanation": ""
+ },
+ {
+  "id": 56,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Cơ quan nào dưới đây thuộc hệ thống tổ chức của quân đội nhân dân Việt Nam?",
+  "image": "",
+  "options": [
+   "Viện kiểm sát nhân dân",
+   "Tổng cục công nghiệp quốc phòng",
+   "Tòa án nhân dân",
+   "Tổng cục biển đảo và hải đảo Việt Nam"
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 57,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Chức năng, nhiệm vụ chính của Bộ Công an là",
+  "image": "",
+  "options": [
+   "Quản lí nhà nước về bảo vệ an ninh quốc gia, trật tự, an toàn xã hội, trực tiếp đấu tranh phòng chống các loại tội phạm, vi phạm pháp luật về an ninh quốc gia, trật tự, an toàn xã hội",
+   "Quản lí nhà nước về bảo vệ an ninh quốc gia, an ninh xã hội, xây dựng các lực lượng công an",
+   "Quản lí nhà nước về bảo vệ an ninh quốc gia, trật tự, an toàn xã hội, xây dựng nền an ninh nhân dân",
+   "Quản lí nhà nước về bảo vệ an ninh quốc gia, trật tự, an toàn xã hội, xây dựng nền an ninh nhân dân và các lực lượng công an"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 58,
+  "section": "Bài 2. TỔ CHỨC QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Chức năng, nhiệm vụ chính của Bộ Tư lệnh Cảnh Sát Cơ động là",
+  "image": "",
+  "options": [
+   "Phòng ngừa,…,xử lí các tội phạm về TTXH",
+   "Bảo đảm ATGT, xử lí vi phạm giao thông",
+   "Bảo vệ cán bộ cao cấp của Đảng, đoàn khách quốc tế",
+   "Thực hiện biện pháp vũ trang bảo vệ ANTTXH"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 59,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Học viện **không tuyển sinh** thí sinh từ học sinh phổ thông là",
+  "image": "",
+  "options": [
+   "Học viện Lục quân, học viện Chính trị",
+   "Học viện Lục quân, học viện Quân y",
+   "Học viện Hậu cần, học viện Biên phòng",
+   "Học viện Hải quân, học viện Kỹ thuật quân sự"
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 60,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Học viện, trường đại học **có tuyển sinh** thí sinh từ học sinh phổ thông là",
+  "image": "",
+  "options": [
+   "Học viện Hải quân, học viện Quốc phòng",
+   "Học viện Lục quân, học viện Chính trị",
+   "Học viện Chính trị, học viện Kỹ thuật quân sự",
+   "Học viện Hải quân, học viện Kỹ thuật quân sự"
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 61,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Ở Việt Nam, học viện nào dưới đây không thuộc hệ thống nhà trường quân đội?",
+  "image": "",
+  "options": [
+   "Học viện Quốc phòng.",
+   "Học viện Lục quân.",
+   "Học viện Hải quân.",
+   "Học viện cảnh sát."
+  ],
+  "correct": 3,
+  "explanation": ""
+ },
+ {
+  "id": 62,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Học viện Quân Y còn được gọi là",
+  "image": "",
+  "options": [
+   "Trường Đại học Y Hà Nội.",
+   "Trường Đại học Y - Dược Lê Hữu Trác",
+   "Trường Đại học Y - Dược Đặng Văn Ngữ",
+   "Trường  Đại học Y - Dược Đặng Thuỳ Trâm."
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 63,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trường Đại học Ngô Quyền là tên gọi khác của",
+  "image": "",
+  "options": [
+   "Trường sĩ quan Công binh.",
+   "Trường sĩ quan Thông tin.",
+   "Trường sĩ quan Tăng thiết giáp.",
+   "Trường sĩ quan Không quân."
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 64,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Trường Đại học Nguyễn Huệ còn được gọi là",
+  "image": "",
+  "options": [
+   "Trường Sĩ quan Lục quân 1.",
+   "Trường Sĩ quan Lục quân 2.",
+   "Trường Sĩ quan Pháo binh.",
+   "Trường Sĩ quan Đặc công."
+  ],
+  "correct": 1,
+  "explanation": ""
+ },
+ {
+  "id": 65,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Thanh niên ngoài quân đội đăng kí dự thi vào các trường thuộc hệ thống trường quân đội khi có tuổi đời",
+  "image": "",
+  "options": [
+   "Không quá 21 tuổi.",
+   "từ 18 tuổi trở lên.",
+   "Từ 23 tuổi trở lên.",
+   "Không quá 27 tuổi."
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 66,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Quân nhân tại ngũ hoặc đã xuất ngũ, công dân hoàn thành nghĩa vụ tham gia công an ND được dự thi vào các trường quân đội khi có tuổi đời",
+  "image": "",
+  "options": [
+   "Không quá 23 tuổi.",
+   "Không quá 25 tuổi.",
+   "Từ 22 tuổi trở lên.",
+   "Không quá 27 tuổi."
+  ],
+  "correct": 0,
+  "explanation": ""
+ },
+ {
+  "id": 67,
+  "section": "Bài 3. CÔNG TÁC TUYỂN SINH , ĐÀO TẠO TRONG CÁC TRƯỜNG QUÂN ĐỘI NHÂN DÂN VIỆT NAM VÀ CÔNG AN NHÂN DÂN VIỆT NAM",
+  "type": "single",
+  "question": "Học viện nào dưới đây thuộc hệ thống trường công an nhân dân?",
+  "image": "",
+  "options": [
+   "Học viện an ninh nhân dân.",
+   "Học viện Quân y.",
+   "Học viện khoa học quân sự.",
+   "Học viện Biên phòng."
+  ],
+  "correct": 0,
+  "explanation": ""
+ }
+];
+const FB = { apiKey: 'OK', databaseURL: 'https://gdqp12gk1-default-rtdb.asia-southeast1.firebasedatabase.app/' };
+const L = 'ABCD', TFP = [0, 0.1, 0.25, 0.5, 1];
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const mmss = ms => { const s = Math.max(0, Math.round(ms / 1000)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+const fd = ts => new Date(ts).toLocaleString('vi-VN');
+const byId = new Map(examData.map(q => [q.id, q]));
+const secs = Array.from(new Set(examData.map(q => q.section)));
+const mem = { runs: [], notes: {}, flags: {}, nm: '', session: null };
+const H = { mode: 'practice', sec: 'all', lbf: 'top', lbs: secs[0] };
+let S = { screen: 'home' }, pollT = 0, lbRows = [], padOn = false;
+
+/* ---------- StorageEngine: IndexedDB + RAM cache (fallback LocalStorage) ---------- */
+const SE = (() => {
+  let db = null, ls = !window.indexedDB;
+  const P = 'nhtq:';
+  const lsAll = () => { const o = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.indexOf(P) === 0) o[k.slice(P.length)] = JSON.parse(localStorage.getItem(k)); } } catch (e) {} return o; };
+  const init = () => new Promise(r => {
+    if (ls) return r();
+    try { const q = indexedDB.open('nht_quiz', 1); q.onupgradeneeded = () => q.result.createObjectStore('kv'); q.onsuccess = () => { db = q.result; r(); }; q.onerror = q.onblocked = () => { ls = true; r(); }; } catch (e) { ls = true; r(); }
+  });
+  const all = () => new Promise(r => {
+    if (ls) return r(lsAll());
+    const o = {};
+    try { const tx = db.transaction('kv', 'readonly'), c = tx.objectStore('kv').openCursor(); c.onsuccess = e => { const x = e.target.result; if (x) { o[x.key] = x.value; x.continue(); } }; tx.oncomplete = () => r(o); tx.onerror = tx.onabort = () => r(o); } catch (e) { r(o); }
+  });
+  const w = (k, v, d) => new Promise(r => {
+    try {
+      if (ls) { d ? localStorage.removeItem(P + k) : localStorage.setItem(P + k, JSON.stringify(v)); return r(); }
+      const tx = db.transaction('kv', 'readwrite'), s = tx.objectStore('kv');
+      d ? s.delete(k) : s.put(v, k);
+      tx.oncomplete = tx.onerror = tx.onabort = () => r();
+    } catch (e) { r(); }
+  });
+  return { init, all, put: (k, v) => w(k, v, 0), del: k => w(k, 0, 1) };
+})();
+
+/* ---------- Toast ---------- */
+let toastT = 0;
+function toast(m, k) { const t = $('#toast'); t.textContent = m; t.className = k || 'warn'; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { t.style.display = 'none'; }, 2400); }
+
+/* ---------- Chấm điểm ---------- */
+const nrm = s => String(s).trim().replace(/\s+/g, '').replace(/,/g, '.');
+function shortOk(a, c) { const x = nrm(a), y = nrm(c); if (x === '') return false; const nx = Number(x), ny = Number(y); return (!isNaN(nx) && !isNaN(ny)) ? nx === ny : x.toLowerCase() === y.toLowerCase(); }
+function grade(q, a) {
+  if (a == null) return 0;
+  if (q.type === 'single') return a === q.correct ? 1 : 0;
+  if (q.type === 'short') return shortOk(a, q.correct) ? 1 : 0;
+  let n = 0; q.statements.forEach((s, k) => { if (a[k] === s.correct) n++; }); return TFP[n];
+}
+const cur = () => S.list[S.i];
+const qOf = () => byId.get(cur().id);
+function canCheck(q, a) {
+  if (a == null) return false;
+  if (q.type === 'short') return String(a).trim() !== '';
+  if (q.type === 'truefalse') return Object.keys(a).length === q.statements.length;
+  return true;
+}
+
+/* ---------- Tạo lượt làm (không đụng tới examData gốc) ---------- */
+function startList(ids, mode, sec) {
+  ids = ids.filter(id => byId.has(id));
+  if (!ids.length) { toast('Không có câu hỏi nào để luyện.', 'warn'); return; }
+  const list = shuf(ids).map(id => { const q = byId.get(id); const n = q.options ? q.options.length : q.statements ? q.statements.length : 0; return { id, v: shuf(Array.from({ length: n }, (_, i) => i)) }; });
+  S = { screen: 'quiz', mode, list, i: 0, ans: {}, res: {}, chk: {}, strike: {}, start: Date.now(), sec: sec || 'custom', limit: list.length * 45000, pal: false };
+  padClear(); window.scrollTo(0, 0); render();
+}
+function saveSess() {
+  if (S.screen !== 'quiz') return;
+  mem.session = { mode: S.mode, list: S.list, i: S.i, ans: S.ans, res: S.res, chk: S.chk, strike: S.strike, start: S.start, sec: S.sec, limit: S.limit };
+  SE.put('session', mem.session);
+}
+function finish() {
+  if (S.screen !== 'quiz') return;
+  const items = S.list.map(c => {
+    const q = byId.get(c.id);
+    if (S.mode === 'exam') { const a = S.ans[c.id] === undefined ? null : S.ans[c.id]; return { id: c.id, a, p: grade(q, a) }; }
+    const r = S.res[c.id]; return r ? { id: c.id, a: r.a, p: r.p } : { id: c.id, a: null, p: 0 };
+  });
+  const score = Math.round(items.reduce((s, x) => s + x.p, 0) * 100) / 100;
+  const run = { id: Date.now(), ts: Date.now(), mode: S.mode, nm: mem.nm, sec: S.sec, score, max: items.length, dur: Date.now() - S.start, items };
+  mem.runs.unshift(run); SE.put('run:' + run.id, run);
+  mem.session = null; SE.del('session');
+  lbPush({ nm: run.nm, score, max: run.max, dur: run.dur, ts: run.ts, sec: run.sec, mode: run.mode });
+  S = { screen: 'result', run }; window.scrollTo(0, 0); render();
+}
+
+/* ---------- Bảng xếp hạng (Firebase REST, fallback LocalStorage) ---------- */
+const fbOn = () => FB.databaseURL && !/YOUR/i.test(FB.databaseURL + FB.apiKey) && navigator.onLine;
+const lbLocal = () => { try { return JSON.parse(localStorage.getItem('nht_lb') || '[]'); } catch (e) { return []; } };
+async function lbPush(rec) {
+  if (fbOn()) {
+    try { const r = await fetch(FB.databaseURL + '/scores.json', { method: 'POST', body: JSON.stringify(rec) }); if (!r.ok) throw new Error('http'); return; }
+    catch (e) { toast('Mất kết nối BXH online - đã lưu BXH giả lập trên thiết bị', 'warn'); }
+  } else toast('BXH chạy chế độ giả lập (LocalStorage)', 'warn');
+  try { const a = lbLocal(); a.push(rec); localStorage.setItem('nht_lb', JSON.stringify(a.slice(-500))); } catch (e) {}
+}
+async function loadBoard() {
+  let rows = null;
+  if (fbOn()) { try { const r = await fetch(FB.databaseURL + '/scores.json'); if (!r.ok) throw new Error('http'); const o = await r.json(); rows = Object.values(o || {}); } catch (e) { rows = null; } }
+  lbRows = rows || lbLocal(); drawBoard();
+}
+function drawBoard() {
+  const el = $('#lbBody'); if (!el) return;
+  let r = lbRows.slice();
+  if (H.lbf === 'sec') r = r.filter(x => x.sec === H.lbs);
+  if (H.lbf === 'new') r.sort((a, b) => b.ts - a.ts); else r.sort((a, b) => b.score - a.score || a.dur - b.dur);
+  r = r.slice(0, 50);
+  el.innerHTML = r.length ? '<table><tr><th>#</th><th>Tên</th><th>Điểm</th><th>Thời gian</th><th>Ngày giờ</th></tr>' + r.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.nm || '?')}</td><td><b>${x.score}/${x.max}</b></td><td>${mmss(x.dur)}</td><td>${fd(x.ts)}</td></tr>`).join('') + '</table>' : '<p class="hint">Chưa có dữ liệu.</p>';
+}
+
+/* ---------- Thống kê câu hay sai (tính từ lịch sử IndexedDB) ---------- */
+function stats() {
+  const m = {};
+  mem.runs.forEach(r => r.items.forEach(it => { const s = m[it.id] || (m[it.id] = { id: it.id, t: 0, w: 0 }); s.t++; if (it.p < 1) s.w++; }));
+  return Object.values(m).filter(s => s.w > 0 && byId.has(s.id)).sort((a, b) => b.w / b.t - a.w / a.t || b.w - a.w);
+}
+
+/* ---------- Sao lưu ---------- */
+function exportJSON() {
+  const d = { v: 1, runs: mem.runs, notes: mem.notes, flags: mem.flags, nm: mem.nm };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], { type: 'application/json' }));
+  a.download = 'nht-sao-luu-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+function importJSON(f) {
+  if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const d = JSON.parse(fr.result), have = new Set(mem.runs.map(r => r.id)); let n = 0;
+      (d.runs || []).forEach(r => { if (r && r.id && !have.has(r.id)) { mem.runs.push(r); SE.put('run:' + r.id, r); n++; } });
+      mem.runs.sort((a, b) => b.ts - a.ts);
+      Object.assign(mem.notes, d.notes || {}); Object.assign(mem.flags, d.flags || {});
+      SE.put('notes', mem.notes); SE.put('flags', mem.flags);
+      if (!mem.nm && d.nm) { mem.nm = d.nm; SE.put('nm', d.nm); }
+      toast('Đã nhập ' + n + ' lượt làm bài.', 'ok'); render();
+    } catch (e) { toast('File sao lưu không hợp lệ.', 'bad'); }
+  };
+  fr.readAsText(f);
+}
+
+/* ---------- Giao diện ---------- */
+const nav = () => '<nav>' + [['home', '🏠 Làm bài'], ['hist', '🕘 Lịch sử'], ['wrong', '❗ Câu hay sai'], ['board', '🏆 Xếp hạng']].map(t => `<button class="btn${S.screen === t[0] ? ' on' : ''}" data-act="tab" data-v="${t[0]}">${t[1]}</button>`).join('') + '</nav>';
+const bk = () => '<div class="card"><button class="btn" data-act="exp">⬇ Xuất file sao lưu (.json)</button><button class="btn" data-act="impbtn">⬆ Nhập file sao lưu (.json)</button><input type="file" id="imp" accept=".json,application/json" hidden></div>';
+const nFlag = v => Object.keys(mem.flags).filter(k => mem.flags[k] === v && byId.has(+k)).length;
+
+function homeHTML() {
+  const st = stats().length, last = mem.runs[0], lw = last ? last.items.filter(x => x.p < 1).length : 0;
+  return `<h2>Ôn luyện trắc nghiệm</h2><div class="card">
+<label class="hint">Họ và tên</label><input id="nm" placeholder="Nhập họ và tên" value="${esc(mem.nm)}">
+<label class="hint">Chế độ</label><div><button class="btn${H.mode === 'practice' ? ' on' : ''}" data-act="mode" data-v="practice">Chế độ Luyện tập</button><button class="btn${H.mode === 'exam' ? ' on' : ''}" data-act="mode" data-v="exam">Chế độ Phòng thi</button></div>
+<label class="hint">Phạm vi</label><select id="secSel"><option value="all">Toàn bộ (${examData.length} câu)</option>${secs.map(s => `<option value="${esc(s)}"${H.sec === s ? ' selected' : ''}>${esc(s)} (${examData.filter(q => q.section === s).length} câu)</option>`).join('')}</select>
+<p><button class="main" data-act="start">Bắt đầu</button></p></div>
+<div class="card"><b>Ôn tập nhanh</b><br>
+<button class="btn" data-act="pwrong"${lw ? '' : ' disabled'}>🔁 Luyện lại câu sai lượt vừa rồi (${lw})</button>
+<button class="btn" data-act="pfreq"${st ? '' : ' disabled'}>❗ Luyện các câu hay sai (${st})</button>
+<button class="btn" data-act="pflag" data-v="star">⭐ Câu hay/Cần nhớ (${nFlag('star')})</button>
+<button class="btn" data-act="pflag" data-v="warn">⚠️ Câu phân vân/Đoán mò (${nFlag('warn')})</button></div>` + bk();
+}
+function histHTML() {
+  return `<h2>Lịch sử làm bài (${mem.runs.length})</h2>` + bk() + (mem.runs.map(r => `<div class="card row"><div><b>${r.score}/${r.max}</b> · ${r.mode === 'exam' ? 'Phòng thi' : 'Luyện tập'} · ${mmss(r.dur)}<br><small class="hint">${fd(r.ts)} · ${esc(r.nm || '')}</small></div><div><button class="btn" data-act="open" data-id="${r.id}">Xem lại chi tiết</button><button class="btn" data-act="del" data-id="${r.id}">🗑</button></div></div>`).join('') || '<p class="hint">Chưa có lượt làm bài nào.</p>');
+}
+function wrongHTML() {
+  const a = stats();
+  return `<h2>Bảng tổng hợp câu hay làm sai</h2>${a.length ? '<button class="main" data-act="pfreq">Luyện các câu hay sai</button>' : ''}` + (a.map(s => { const q = byId.get(s.id); return `<div class="card"><span class="sec">${esc(q.section)}</span><div>${fmt(q.question)}</div><small class="hint">Sai ${s.w}/${s.t} lần · ${Math.round(s.w / s.t * 100)}% sai</small></div>`; }).join('') || '<p class="hint">Chưa có câu nào làm sai.</p>');
+}
+function boardHTML() {
+  return `<h2>Bảng xếp hạng</h2><div class="card"><select id="lbf"><option value="top"${H.lbf === 'top' ? ' selected' : ''}>Top điểm cao nhất</option><option value="new"${H.lbf === 'new' ? ' selected' : ''}>Theo lượt làm mới nhất</option><option value="sec"${H.lbf === 'sec' ? ' selected' : ''}>Theo từng phần/bài</option></select>` +
+    (H.lbf === 'sec' ? `<select id="lbs">${secs.map(s => `<option value="${esc(s)}"${H.lbs === s ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select>` : '') +
+    `<p class="hint">${fbOn() ? '🟢 Online - tự cập nhật mỗi 5 giây' : '🟠 Chế độ giả lập (LocalStorage) - điền firebaseConfig để dùng BXH online'}</p><div id="lbBody"></div></div>`;
+}
+function resultHTML() {
+  const r = S.run, w = r.items.filter(x => x.p < 1).length;
+  return `<h2>Kết quả</h2><div class="card"><div class="qt">Điểm: <b>${r.score}/${r.max}</b></div><p>Thời gian: ${mmss(r.dur)} · Câu chưa đúng hoàn toàn: ${w}/${r.max}</p>
+<button class="main" data-act="open" data-id="${r.id}">Xem lại chi tiết</button> <button class="btn" data-act="pwrong2" ${w ? '' : 'disabled'}>🔁 Luyện lại ${w} câu sai</button> <button class="btn" data-act="tab" data-v="home">🏠 Trang chủ</button></div>`;
+}
+function reviewHTML() {
+  const f = S.flt;
+  return `<h2>Xem lại chi tiết · ${S.run.score}/${S.run.max}</h2><div>${[['all', 'Tất cả'], ['wrong', 'Câu sai'], ['right', 'Câu đúng']].map(t => `<button class="btn${f === t[0] ? ' on' : ''}" data-act="rflt" data-v="${t[0]}">${t[1]}</button>`).join('')}<button class="btn" data-act="tab" data-v="hist">← Quay lại</button></div>` + S.run.items.map((it, i) => {
+    const q = byId.get(it.id); if (!q) return '';
+    const ok = it.p >= 1; if ((f === 'wrong' && ok) || (f === 'right' && !ok)) return '';
+    let d = '';
+    if (q.type === 'single') d = `<p>Bạn chọn: <b>${it.a == null ? '(bỏ qua)' : fmt(q.options[it.a])}</b></p><p>Đáp án đúng: <b class="g">${fmt(q.options[q.correct])}</b></p>`;
+    else if (q.type === 'short') d = `<p>Bạn nhập: <b>${it.a == null ? '(bỏ qua)' : esc(it.a)}</b></p><p>Đáp án đúng: <b class="g">${esc(q.correct)}</b></p>`;
+    else d = q.statements.map((s, k) => { const v = it.a ? it.a[k] : undefined; return `<p>${'abcd'[k]}) ${fmt(s.text)}<br><small>Bạn chọn: ${v === undefined ? '—' : v ? 'Đúng' : 'Sai'} | Đáp án: ${s.correct ? 'Đúng' : 'Sai'} ${v === s.correct ? '✔' : '✘'}</small></p>`; }).join('');
+    return `<div class="card"><span class="sec">${esc(q.section)}</span><br><b>Câu ${i + 1}</b> ${ok ? '✅' : '❌'} <small class="hint">(${it.p}/1 điểm)</small><div class="qt">${fmt(q.question)}</div>${q.image ? `<img class="qi" src="${esc(q.image)}">` : ''}${d}${q.explanation ? `<div class="exp">💡 <b>Giải thích chi tiết</b><br>${fmt(q.explanation)}</div>` : ''}<div class="hint" style="margin-top:10px">📝 Ghi chú của bạn</div><textarea class="note" data-nid="${q.id}" rows="2">${esc(mem.notes[q.id] || '')}</textarea></div>`;
+  }).join('');
+}
+function quizHTML() {
+  const c = cur(), q = qOf(), id = c.id, a = S.ans[id], locked = S.mode === 'practice' && S.chk[id], fl = mem.flags[id], n = S.list.length;
+  let st = 'Chưa chọn';
+  if (a != null && a !== '') st = q.type === 'single' ? 'Chọn ' + L[c.v.indexOf(a)] : q.type === 'short' ? 'Nhập ' + a : 'Đã chọn ' + Object.keys(a).length + '/' + q.statements.length;
+  let b = '', hint = 'Chọn một đáp án đúng';
+  if (q.type === 'single') {
+    b = c.v.map((o, p) => {
+      let k = 'opt'; if (a === o) k += ' sel';
+      if (locked) { if (o === q.correct) k += ' ok'; else if (a === o) k += ' bad'; }
+      if (S.strike[id] && S.strike[id][o]) k += ' cut';
+      return `<div class="${k}" data-act="pick" data-o="${o}"><span class="ltr">${L[p]}</span><span class="tx">${fmt(q.options[o])}</span>${locked ? '' : `<button class="x" data-act="strike" data-o="${o}" title="Gạch bỏ đáp án">✕</button>`}</div>`;
+    }).join('');
+  } else if (q.type === 'truefalse') {
+    hint = 'Chọn Đúng hoặc Sai cho từng ý';
+    b = c.v.map((k, p) => {
+      const s = q.statements[k], v = a ? a[k] : undefined; let cl = 'tfr'; if (locked) cl += v === s.correct ? ' ok' : ' bad';
+      return `<div class="${cl}"><span class="tx"><b>${'abcd'[p]})</b> ${fmt(s.text)}${locked ? `<br><small>${v === s.correct ? '✔ Bạn chọn đúng' : '✘ Bạn chọn sai'} - đáp án: ${s.correct ? 'Đúng' : 'Sai'}</small>` : ''}</span><span><button class="btn${v === true ? ' on' : ''}" data-act="tf" data-k="${k}" data-b="1">Đúng</button><button class="btn${v === false ? ' on' : ''}" data-act="tf" data-k="${k}" data-b="0">Sai</button></span></div>`;
+    }).join('');
+  } else {
+    hint = 'Nhập đáp án (số)';
+    b = `<input id="sa" class="sa" type="text" inputmode="decimal" autocomplete="off" placeholder="Nhập đáp án" value="${esc(a || '')}"${locked ? ' disabled' : ''}>` + (locked ? `<p>Đáp án đúng: <b class="g">${esc(q.correct)}</b></p>` : '');
+  }
+  if (locked) {
+    if (q.explanation) b += `<div class="exp">💡 <b>Giải thích chi tiết</b><br>${fmt(q.explanation)}</div>`;
+    b += `<div class="hint" style="margin-top:12px">📝 Ghi chú/Mẹo nhớ của riêng bạn</div><textarea class="note" data-nid="${id}" rows="2">${esc(mem.notes[id] || '')}</textarea>`;
+  }
+  const pal = S.mode === 'exam' && S.pal ? '<div class="card pal">' + S.list.map((x, i) => `<button class="${S.ans[x.id] != null && S.ans[x.id] !== '' ? 'an ' : ''}${i === S.i ? 'cu' : ''}" data-act="goto" data-i="${i}">${i + 1}</button>`).join('') + '</div>' : '';
+  return `<div class="bar"><span>Câu ${S.i + 1} - ${st}</span><span id="tm"></span><span>${S.mode === 'exam' ? '<button class="btn" data-act="pal">☰ Chọn câu</button>' : ''}<button class="btn" data-act="end">${S.mode === 'exam' ? 'Nộp bài' : 'Kết thúc'}</button><button class="btn" data-act="tab" data-v="home">✕</button></span></div>${pal}
+<div class="card"><div class="sec">${esc(q.section)}</div><div class="row"><h3 style="margin:6px 0">Câu ${S.i + 1}</h3><span><button class="btn${fl === 'star' ? ' on' : ''}" data-act="flag" data-v="star">⭐ Câu hay/Cần nhớ</button><button class="btn${fl === 'warn' ? ' on' : ''}" data-act="flag" data-v="warn">⚠️ Phân vân/Đoán mò</button></span></div>
+<div class="qt">${fmt(q.question)}</div>${q.image ? `<img class="qi" src="${esc(q.image)}">` : ''}<div class="hint">${hint}</div>${b}</div>`;
+}
+function footHTML() {
+  const n = S.list.length, q = qOf(), id = cur().id; let t, act, dis = false;
+  if (S.mode === 'exam') { const last = S.i === n - 1; t = last ? 'Nộp bài' : 'Câu tiếp theo'; act = last ? 'end' : 'next'; }
+  else if (!S.chk[id]) { t = 'Kiểm tra'; act = 'check'; dis = !canCheck(q, S.ans[id]); }
+  else if (S.chk[id] === 'ok') { t = S.i === n - 1 ? 'Hoàn thành' : 'Câu tiếp theo'; act = 'next'; }
+  else { t = '🔄 Thử lại'; act = 'retry'; }
+  return `<div><button class="btn" data-act="go" data-d="-1">◀</button><b>Câu ${S.i + 1}/${n}</b><button class="btn" data-act="go" data-d="1" style="margin-left:4px">▶</button></div><button class="main" data-act="${act}"${dis ? ' disabled' : ''}>${t}</button>`;
+}
+function render() {
+  const a = $('#app'), f = $('#ft'), sc = S.screen; f.style.display = 'none';
+  if (sc === 'quiz') { a.innerHTML = quizHTML(); f.innerHTML = footHTML(); f.style.display = 'flex'; saveSess(); tick(); const i = $('#sa'); if (i && !i.disabled) { const v = i.value; i.focus(); try { i.setSelectionRange(v.length, v.length); } catch (e) {} } }
+  else { a.innerHTML = nav() + ({ home: homeHTML, hist: histHTML, wrong: wrongHTML, board: boardHTML, result: resultHTML, review: reviewHTML })[sc](); if (sc === 'board') drawBoard(); }
+}
+function tick() {
+  const el = $('#tm'); if (!el || S.screen !== 'quiz') return;
+  const d = Date.now() - S.start;
+  if (S.mode === 'exam') { const r = S.limit - d; if (r <= 0) { toast('Hết giờ! Đã tự động nộp bài.', 'warn'); finish(); return; } el.textContent = '⏳ ' + mmss(r); }
+  else el.textContent = '⏱ ' + mmss(d);
+}
+
+/* ---------- Nháp ---------- */
+let pcx = null, pdn = false, pcol = '#fbbf24', per = false;
+function padFit() { const p = $('#pad'); p.width = window.innerWidth; p.height = window.innerHeight; pcx.lineCap = 'round'; pcx.lineJoin = 'round'; }
+function padClear() { if (pcx) pcx.clearRect(0, 0, $('#pad').width, $('#pad').height); }
+
+/* ---------- Hành động ---------- */
+function jump(i) { S.i = Math.max(0, Math.min(S.list.length - 1, i)); padClear(); window.scrollTo(0, 0); render(); }
+function nextQ() { if (S.i < S.list.length - 1) jump(S.i + 1); else if (S.mode === 'exam') endQuiz(); else finish(); }
+function endQuiz() {
+  const un = S.list.filter(c => S.mode === 'exam' ? (S.ans[c.id] == null || S.ans[c.id] === '') : !S.res[c.id]).length;
+  if (confirm(un ? 'Còn ' + un + ' câu chưa trả lời. Bạn có chắc muốn kết thúc?' : 'Bạn có chắc muốn kết thúc?')) finish();
+}
+function check() {
+  const id = cur().id, q = qOf(), a = S.ans[id];
+  if (!canCheck(q, a)) return;
+  const p = grade(q, a); S.chk[id] = p === 1 ? 'ok' : 'bad';
+  if (!(id in S.res)) S.res[id] = { a: JSON.parse(JSON.stringify(a)), p };
+  if (p === 1) toast('✔ Làm tốt lắm - Hãy giữ vững phong độ. Tiến lên', 'ok'); else toast('🔄 Không đúng! - Làm lại hoặc bạn có thể bỏ qua', 'bad');
+  render();
+}
+function mainAct() {
+  if (S.screen !== 'quiz') return;
+  const id = cur().id;
+  if (S.mode === 'exam') { if (S.i === S.list.length - 1) endQuiz(); else nextQ(); }
+  else if (!S.chk[id]) check();
+  else if (S.chk[id] === 'ok') nextQ();
+  else { delete S.ans[id]; delete S.chk[id]; render(); }
+}
+function pick(o) { const id = cur().id; if (S.mode === 'practice' && S.chk[id]) return; S.ans[id] = o; render(); }
+function setScreen(v) { clearInterval(pollT); S = { screen: v }; if (v === 'board') { loadBoard(); pollT = setInterval(loadBoard, 5000); } window.scrollTo(0, 0); render(); }
+function wrongIds(run) { return run.items.filter(x => x.p < 1).map(x => x.id); }
+function act(a, d, e) {
+  const q = S.screen === 'quiz' ? qOf() : null, id = S.screen === 'quiz' ? cur().id : 0;
+  switch (a) {
+    case 'tab': setScreen(d.v); break;
+    case 'mode': H.mode = d.v; render(); break;
+    case 'start': {
+      mem.nm = ($('#nm').value || '').trim();
+      if (!mem.nm) { toast('Vui lòng nhập Họ và tên trước khi bắt đầu.', 'warn'); $('#nm').focus(); break; }
+      SE.put('nm', mem.nm);
+      startList(examData.filter(x => H.sec === 'all' || x.section === H.sec).map(x => x.id), H.mode, H.sec); break;
+    }
+    case 'pwrong': if (mem.runs[0]) startList(wrongIds(mem.runs[0]), 'practice', 'custom'); break;
+    case 'pwrong2': startList(wrongIds(S.run), 'practice', 'custom'); break;
+    case 'pfreq': startList(stats().map(s => s.id), 'practice', 'custom'); break;
+    case 'pflag': startList(Object.keys(mem.flags).filter(k => mem.flags[k] === d.v).map(Number), 'practice', 'custom'); break;
+    case 'pick': pick(+d.o); break;
+    case 'strike': { S.strike[id] = S.strike[id] || {}; S.strike[id][d.o] = !S.strike[id][d.o]; render(); break; }
+    case 'tf': { if (S.mode === 'practice' && S.chk[id]) break; S.ans[id] = Object.assign({}, S.ans[id], { [d.k]: d.b === '1' }); render(); break; }
+    case 'check': check(); break;
+    case 'retry': case 'next': mainAct(); break;
+    case 'go': jump(S.i + (+d.d)); break;
+    case 'goto': jump(+d.i); break;
+    case 'pal': S.pal = !S.pal; render(); break;
+    case 'end': endQuiz(); break;
+    case 'flag': { if (mem.flags[id] === d.v) delete mem.flags[id]; else mem.flags[id] = d.v; SE.put('flags', mem.flags); render(); break; }
+    case 'open': { const r = mem.runs.find(x => String(x.id) === d.id); if (r) { clearInterval(pollT); S = { screen: 'review', run: r, flt: 'all' }; window.scrollTo(0, 0); render(); } break; }
+    case 'rflt': S.flt = d.v; render(); break;
+    case 'del': if (confirm('Xóa lượt làm bài này?')) { mem.runs = mem.runs.filter(x => String(x.id) !== d.id); SE.del('run:' + d.id); render(); } break;
+    case 'exp': exportJSON(); break;
+    case 'impbtn': $('#imp').click(); break;
+    case 'padtoggle': padOn = !padOn; $('#pad').style.display = $('#padTools').style.display = padOn ? 'block' : 'none'; $('#padBtn').textContent = padOn ? '✖ Tắt nháp' : '✏️ Nháp'; break;
+    case 'pc': pcol = d.c; per = false; break;
+    case 'per': per = true; break;
+    case 'pclear': padClear(); break;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) {}
+  await SE.init();
+  const all = await SE.all();
+  Object.keys(all).forEach(k => { if (k.indexOf('run:') === 0) mem.runs.push(all[k]); else if (k !== 'runs' && k in mem) mem[k] = all[k]; });
+  mem.runs.sort((a, b) => b.ts - a.ts);
+
+  pcx = $('#pad').getContext('2d'); padFit();
+  const pd = $('#pad');
+  pd.addEventListener('pointerdown', e => { pdn = true; pcx.globalCompositeOperation = per ? 'destination-out' : 'source-over'; pcx.strokeStyle = pcol; pcx.lineWidth = per ? 28 : 3; pcx.beginPath(); pcx.moveTo(e.clientX, e.clientY); pcx.lineTo(e.clientX + 0.1, e.clientY); pcx.stroke(); try { pd.setPointerCapture(e.pointerId); } catch (x) {} });
+  pd.addEventListener('pointermove', e => { if (!pdn) return; pcx.lineTo(e.clientX, e.clientY); pcx.stroke(); });
+  ['pointerup', 'pointercancel'].forEach(n => pd.addEventListener(n, () => { pdn = false; }));
+  window.addEventListener('resize', () => { if (pd.width < window.innerWidth || pd.height < window.innerHeight) padFit(); });
+
+  document.addEventListener('click', e => { const t = e.target.closest('[data-act]'); if (t) act(t.dataset.act, t.dataset, e); });
+  document.addEventListener('contextmenu', e => {
+    const t = e.target.closest('.opt'); if (!t || S.screen !== 'quiz') return;
+    e.preventDefault(); const id = cur().id, o = t.dataset.o; S.strike[id] = S.strike[id] || {}; S.strike[id][o] = !S.strike[id][o]; render();
+  });
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'secSel') H.sec = t.value; else if (t.id === 'lbf') { H.lbf = t.value; render(); } else if (t.id === 'lbs') { H.lbs = t.value; drawBoard(); } else if (t.id === 'imp') importJSON(t.files[0]);
+  });
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if (t.id === 'nm') mem.nm = t.value;
+    else if (t.id === 'sa' && S.screen === 'quiz') { S.ans[cur().id] = t.value; $('#ft').innerHTML = footHTML(); saveSess(); }
+    else if (t.dataset && t.dataset.nid) { mem.notes[t.dataset.nid] = t.value; SE.put('notes', mem.notes); }
+  });
+  document.addEventListener('keydown', e => {
+    if (S.screen !== 'quiz' || e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target, k = e.key;
+    if (t.id === 'sa') { if (k === 'Enter') { e.preventDefault(); mainAct(); } return; }
+    if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return;
+    if (t.tagName === 'BUTTON') t.blur();
+    const q = qOf();
+    if (q.type === 'single' && /^[1-4a-dA-D]$/.test(k)) { const p = /\d/.test(k) ? +k - 1 : 'abcd'.indexOf(k.toLowerCase()); const o = cur().v[p]; if (o != null) pick(o); }
+    else if (k === 'Enter' || k === ' ') { e.preventDefault(); mainAct(); }
+    else if (k === 'ArrowRight') jump(S.i + 1);
+    else if (k === 'ArrowLeft') jump(S.i - 1);
+  });
+  setInterval(tick, 1000);
+
+  const ss = mem.session;
+  if (ss && ss.list && ss.list.length) {
+    ss.list = ss.list.filter(c => byId.has(c.id));
+    if (ss.list.length && confirm('Bạn có bài đang làm dở. Tiếp tục làm từ câu đang dở?')) {
+      S = Object.assign({ screen: 'quiz', pal: false }, ss); S.i = Math.min(S.i || 0, S.list.length - 1);
+    } else { mem.session = null; SE.del('session'); }
+  }
+  render();
+});
+})();
+</script>
+</body>
+</html>
